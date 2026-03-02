@@ -1,0 +1,9 @@
+﻿Flask==2.3.2
+pandas==2.0.3
+numpy==1.25.2
+scikit-learn==1.3.0
+joblib==1.3.1
+Jinja2==3.1.6
+Werkzeug==3.1.3
+openpyxl==3.1.5
+reportlab==4.2.2

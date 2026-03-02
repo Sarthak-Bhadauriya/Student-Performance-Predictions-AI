@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Performance Predictor</title>
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #f1f4fb;
+            --bg-card: rgba(255, 255, 255, 0.76);
+            --text-main: #112031;
+            --text-muted: #4f6278;
+            --accent: #2563eb;
+            --accent-strong: #1d4ed8;
+            --accent-soft: #e0ecff;
+            --warning-soft: #ffe2f1;
+            --border-soft: rgba(13, 70, 96, 0.2);
+            --shadow-soft: 0 18px 38px rgba(15, 43, 66, 0.15);
+            --table-bg: #fff;
+            --thead-bg: #e9f0f7;
+            --thead-text: #284259;
+            --result-bg: #ecfff4;
+            --result-text: #14532d;
+            --result-border: #9ad8b3;
+            --overlay-bg: rgba(245, 251, 252, 0.75);
+            --chip-border: #f5a3cf;
+            --chip-text: #8a2f66;
+            --input-border: #c8d4dd;
+            --focus-ring: rgba(15, 118, 110, 0.24);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0a1420;
+            --bg-card: rgba(15, 31, 46, 0.8);
+            --text-main: #e3edf7;
+            --text-muted: #a9bbce;
+            --accent: #60a5fa;
+            --accent-strong: #3b82f6;
+            --accent-soft: #1e334f;
+            --warning-soft: #3a2334;
+            --border-soft: rgba(111, 190, 200, 0.34);
+            --shadow-soft: 0 18px 38px rgba(0, 0, 0, 0.44);
+            --table-bg: #12202d;
+            --thead-bg: #173046;
+            --thead-text: #d6e4f3;
+            --result-bg: #163925;
+            --result-text: #b7f6ce;
+            --result-border: #2f8a5b;
+            --overlay-bg: rgba(5, 10, 15, 0.62);
+            --chip-border: #6f3c5f;
+            --chip-text: #f8b9de;
+            --input-border: #345069;
+            --focus-ring: rgba(42, 183, 169, 0.22);
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Sora', sans-serif;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at 10% 14%, #ffd2ea 0%, transparent 35%),
+                radial-gradient(circle at 88% 6%, #c8f0ff 0%, transparent 38%),
+                radial-gradient(circle at 52% 100%, #dfffe9 0%, transparent 44%),
+                linear-gradient(135deg, #f6f2ff 0%, #eaf7ff 100%);
+            transition: background 220ms ease, color 220ms ease;
+        }
+
+        h1, h2, h3, .brand {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.03em;
+        }
+
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1rem;
+        }
+
+        .hero {
+            border: 1px solid var(--border-soft);
+            border-radius: 1.35rem;
+            padding: 1.4rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(5px);
+            box-shadow: var(--shadow-soft);
+            animation: fadeUp 450ms ease;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            margin-bottom: 0;
+            font-size: 0.92rem;
+        }
+
+        .section-card {
+            border: 1px solid var(--border-soft);
+            border-radius: 1.1rem;
+            padding: 1.2rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(5px);
+            box-shadow: var(--shadow-soft);
+            animation: fadeUp 550ms ease;
+        }
+
+        .form-label {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.75rem;
+            border: 1px solid var(--input-border);
+            padding: 0.65rem 0.8rem;
+            background: var(--table-bg);
+            color: var(--text-main);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.2rem var(--focus-ring);
+        }
+
+        .btn-brand {
+            background: linear-gradient(120deg, var(--accent) 0%, #15807a 100%);
+            border: 0;
+            color: #fff;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1rem;
+            font-weight: 700;
+        }
+
+        .btn-brand:hover {
+            background: linear-gradient(120deg, var(--accent-strong) 0%, #0f716b 100%);
+            color: #fff;
+        }
+
+        .btn-soft {
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            border: 1px solid #a9c9ff;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1rem;
+            font-weight: 700;
+        }
+
+        .btn-soft:hover {
+            background: #cfe1ff;
+            color: var(--accent-strong);
+        }
+
+        .result-banner {
+            border: 1px solid var(--result-border);
+            background: var(--result-bg);
+            color: var(--result-text);
+            border-radius: 0.8rem;
+            padding: 0.85rem 1rem;
+        }
+
+        .insight-box {
+            margin-top: 0.85rem;
+            border: 1px solid var(--border-soft);
+            background: var(--table-bg);
+            border-radius: 0.85rem;
+            padding: 0.9rem 0.95rem;
+        }
+
+        .insight-title {
+            font-weight: 700;
+            color: var(--accent-strong);
+            margin-bottom: 0.45rem;
+        }
+
+        .insight-list {
+            margin: 0;
+            padding-left: 1rem;
+            color: var(--text-main);
+            font-size: 0.88rem;
+        }
+
+        .insight-text {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        .importance-row {
+            display: grid;
+            grid-template-columns: 130px 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.42rem;
+        }
+
+        .importance-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .importance-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #dce8ff;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .importance-track {
+            background: #2a3f61;
+        }
+
+        .importance-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #22c55e 0%, #3b82f6 100%);
+        }
+
+        .importance-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-soft);
+            border-radius: 0.8rem;
+            background: var(--table-bg);
+        }
+
+        .table thead th {
+            background: var(--thead-bg);
+            color: var(--thead-text);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .table td {
+            white-space: nowrap;
+            color: var(--text-main);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--warning-soft);
+            border: 1px solid var(--chip-border);
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
+            color: var(--chip-text);
+            font-size: 0.85rem;
+        }
+
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--overlay-bg);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .chart-box {
+            max-width: 420px;
+            margin-top: 1rem;
+        }
+
+        .btn-theme {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-soft);
+            border-radius: 0.7rem;
+            padding: 0.35rem 0.62rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            line-height: 1.2;
+        }
+
+        .btn-theme:hover {
+            background: var(--accent-soft);
+            color: var(--text-main);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .page-wrap {
+                padding-top: 1rem;
+            }
+
+            .hero, .section-card {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page-wrap">
+        <section class="hero mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <p class="brand text-uppercase fw-bold mb-1">Student Intelligence Suite v3</p>
+                    <h1 class="h3 mb-1">Student Performance Predictor</h1>
+                    <p>Single prediction + bulk upload workflow with cleaner analytics-first layout.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="themeToggle" type="button" class="btn btn-theme">Dark Mode</button>
+                    <a href="/history" class="btn btn-soft">View History</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="content-grid">
+            <section class="section-card mb-4 mb-lg-0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Single Prediction</h2>
+                    <span class="chip">Quick form</span>
+                </div>
+                <form id="singlePredictForm" action="/predict" method="post" class="row g-3 needs-validation" novalidate>
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="Name" class="form-control" placeholder="Enter student name" required>
+                        <div class="invalid-feedback">Please enter a name.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Gender</label>
+                        <select name="Gender" class="form-select" required>
+                            <option value="" selected disabled>Select gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <div class="invalid-feedback">Please select gender.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Attendance</label>
+                        <input type="number" name="Attendance" class="form-control" min="0" max="100" placeholder="0-100" required>
+                        <div class="invalid-feedback">Attendance must be between 0 and 100.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Assignment Score</label>
+                        <input type="number" name="AssignmentScore" class="form-control" min="0" max="100" placeholder="0-100" required>
+                        <div class="invalid-feedback">Assignment Score must be between 0 and 100.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Midterm Marks</label>
+                        <input type="number" name="MidtermMarks" class="form-control" min="0" max="100" placeholder="0-100" required>
+                        <div class="invalid-feedback">Midterm Marks must be between 0 and 100.</div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-brand">Predict Grade</button>
+                    </div>
+                </form>
+
+                {% if prediction_text %}
+                    <div class="result-banner mt-3">{{ prediction_text }}</div>
+                {% endif %}
+                {% if ai_explanation %}
+                    <div class="insight-box">
+                        <div class="insight-title">AI Explanation</div>
+                        <p class="insight-text mb-2">{{ ai_explanation }}</p>
+                        {% if importance_rows %}
+                            {% for item in importance_rows %}
+                            <div class="importance-row">
+                                <div class="importance-name">{{ item.feature }}</div>
+                                <div class="importance-track">
+                                    <div class="importance-fill" style="width: {{ item.importance }}%;"></div>
+                                </div>
+                                <div class="importance-meta">{{ item.importance }}% | {{ item.value }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if ai_tips %}
+                    <div class="insight-box">
+                        <div class="insight-title">Smart Feedback</div>
+                        <ul class="insight-list">
+                            {% for tip in ai_tips %}
+                                <li>{{ tip }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="section-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Bulk Prediction</h2>
+                    <span class="chip">CSV / Excel</span>
+                </div>
+                <form id="bulkPredictForm" action="/predict_bulk" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <label class="form-label">Upload file</label>
+                    <input type="file" name="file" accept=".csv,.xlsx,.xls" class="form-control" required>
+                    <div class="invalid-feedback">Please upload a CSV or Excel file.</div>
+                    <button type="submit" class="btn btn-brand mt-3">Upload and Predict</button>
+                </form>
+
+                {% if bulk_results %}
+                    <div class="result-banner mt-3">
+                        Bulk prediction completed. Showing results below.
+                    </div>
+                    <form action="/download_bulk_pdf" method="post" class="mt-2">
+                        <button type="submit" class="btn btn-brand">Download PDF Report</button>
+                    </form>
+                    <div class="table-wrap mt-3">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    {% for col in bulk_results[0].keys() %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in bulk_results %}
+                                    <tr>
+                                        {% for value in row.values() %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="resultChart"></canvas>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <div class="spinner-overlay" id="loadingSpinner">
+        <div class="spinner-border text-success" role="status"></div>
+        <span class="visually-hidden">Loading...</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% if bulk_results %}
+    <script id="bulkData" type="application/json">
+        {{ bulk_results | tojson | safe }}
+    </script>
+    <script>
+        var resultData = JSON.parse(document.getElementById('bulkData').textContent);
+        var passCount = 0;
+        var failCount = 0;
+
+        resultData.forEach(function (row) {
+            if (row['Predicted_Result'] === 'Pass') passCount++;
+            else failCount++;
+        });
+
+        var ctx = document.getElementById('resultChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pass', 'Fail'],
+                datasets: [{
+                    data: [passCount, failCount],
+                    backgroundColor: ['#22c55e', '#f43f5e'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Prediction Split'
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        (() => {
+            'use strict';
+
+            function showSpinner() {
+                document.getElementById('loadingSpinner').style.display = 'flex';
+            }
+
+            function setupThemeToggle() {
+                var toggleButton = document.getElementById('themeToggle');
+                if (!toggleButton) return;
+
+                function applyButtonText(theme) {
+                    toggleButton.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+                }
+
+                var activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                applyButtonText(activeTheme);
+
+                toggleButton.addEventListener('click', function () {
+                    var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                    var nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                    localStorage.setItem('theme', nextTheme);
+                    applyButtonText(nextTheme);
+                });
+            }
+
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        showSpinner();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            setupThemeToggle();
+        })();
+    </script>
+</body>
+</html>

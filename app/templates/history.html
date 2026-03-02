@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediction History</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #edf3fb;
+      --card: #ffffffd9;
+      --text: #15263a;
+      --muted: #4d6075;
+      --line: #cfdee9;
+      --accent: #2563eb;
+      --shadow: 0 16px 34px rgba(24, 47, 70, 0.16);
+      --table-bg: #fff;
+      --thead-bg: #f2f7fa;
+      --thead-text: #37516b;
+      --btn-text: #fff;
+      --subtle: #6b7b8f;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a1521;
+      --card: #122538d9;
+      --text: #dbe7f4;
+      --muted: #9bb0c6;
+      --line: #2d4760;
+      --accent: #60a5fa;
+      --shadow: 0 16px 32px rgba(0, 0, 0, 0.44);
+      --table-bg: #12202d;
+      --thead-bg: #173149;
+      --thead-text: #d7e5f3;
+      --btn-text: #04171a;
+      --subtle: #a8b9cc;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 22%, #ffd6ec 0%, transparent 35%),
+        radial-gradient(circle at 90% 10%, #d4efff 0%, transparent 36%),
+        linear-gradient(140deg, #f7f4ff 0%, #eaf4ff 100%);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.4rem 1rem 2rem;
+    }
+
+    .card-shell {
+      border: 1px solid var(--line);
+      border-radius: 1.15rem;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: var(--table-bg);
+    }
+
+    .table thead th {
+      background: var(--thead-bg);
+      color: var(--thead-text);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .table td {
+      white-space: nowrap;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    .btn-back {
+      background: linear-gradient(120deg, var(--accent) 0%, #1a7c7f 100%);
+      color: var(--btn-text);
+      border: 0;
+      border-radius: 0.8rem;
+      padding: 0.55rem 0.95rem;
+      font-weight: 700;
+    }
+
+    .btn-back:hover {
+      color: #fff;
+      background: linear-gradient(120deg, #0d4f51 0%, #116466 100%);
+    }
+
+    .btn-clear {
+      background: linear-gradient(120deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      border: 0;
+      border-radius: 0.8rem;
+      padding: 0.55rem 0.95rem;
+      font-weight: 700;
+    }
+
+    .btn-clear:hover {
+      color: #fff;
+      background: linear-gradient(120deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .btn-theme {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      padding: 0.35rem 0.62rem;
+      font-weight: 600;
+      font-size: 0.78rem;
+      line-height: 1.2;
+    }
+
+    .btn-theme:hover {
+      background: rgba(42, 183, 169, 0.14);
+      color: var(--text);
+    }
+
+    .badge-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      background: #ffe9cf;
+      color: #8a5524;
+      border: 1px solid #f2c695;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+      <div>
+        <h1 class="h3 mb-1">Prediction History</h1>
+        <p class="mb-0" style="color: var(--subtle);">Most recent predictions are shown first.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button id="themeToggle" type="button" class="btn btn-theme">Dark Mode</button>
+        <form action="/history/clear" method="post" onsubmit="return confirm('Are you sure you want to clear all history?');">
+          <button type="submit" class="btn btn-clear">Clear History</button>
+        </form>
+        <a href="/" class="btn btn-back">Back to Predictor</a>
+      </div>
+    </div>
+
+    <section class="card-shell">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="small" style="color: var(--muted);">Stored records</div>
+        <span class="badge-count">{{ records|length }} rows</span>
+      </div>
+      <div class="table-wrap">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Attendance</th>
+              <th>Assignment Score</th>
+              <th>Midterm Marks</th>
+              <th>Gender</th>
+              <th>Predicted Result</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+              <tr>
+                <td>{{ r[0] }}</td>
+                <td>{{ r[1] }}</td>
+                <td>{{ r[2] }}</td>
+                <td>{{ r[3] }}</td>
+                <td>{{ r[4] }}</td>
+                <td>{{ r[5] }}</td>
+                <td>{{ r[6] }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var toggleButton = document.getElementById('themeToggle');
+      if (!toggleButton) return;
+
+      function applyButtonText(theme) {
+        toggleButton.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+      }
+
+      var activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      applyButtonText(activeTheme);
+
+      toggleButton.addEventListener('click', function () {
+        var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        var nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        applyButtonText(nextTheme);
+      });
+    })();
+  </script>
+</body>
+</html>
